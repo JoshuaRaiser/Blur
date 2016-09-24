@@ -107,10 +107,47 @@ public class BlurSim
 	                    finalBlue += (blue * k);
 	            	}
 	            	
-	            	int finalPixel = ((int)finalRed << 0) | ((int)finalGreen << 8) | ((int)finalBlue << 16);
+	            	int finalPixel = ((int)finalRed) | ((int)finalGreen << 8) | ((int)finalBlue << 16);
 	            	buffer.pixels[y * buffer.width + x] = finalPixel;
 	            }
 	        }
+        }
+    }
+    
+    static buffer createRandomImage(Random rand)
+    {
+        buffer image = new buffer();
+        image.width = 720+rand.nextInt(360);
+        image.height = 720+rand.nextInt(360);
+        image.pixels = new int[image.width * image.height];
+        
+        for (int y = 0; y < image.height; ++y)
+        {
+            for (int x = 0; x < image.width; ++x)
+            {
+                int r = rand.nextInt(255);
+                int g = rand.nextInt(255);
+                int b = rand.nextInt(255);
+                
+                int rgb = (r) | (g << 8) | (b << 16);
+                image.pixels[y * image.width + x] = rgb;
+            }
+        }
+        
+        return image;
+    }
+    
+    static double triangularDistribution(double a, double b, double c) 
+    {
+        double F = (c - a) / (b - a);
+        double rand = Math.random();
+        if (rand < F) 
+        {
+            return a + Math.sqrt(rand * (b - a) * (c - a));
+        } 
+        else 
+        {
+            return b - Math.sqrt((1 - rand) * (b - a) * (b - c));
         }
     }
     
@@ -118,13 +155,11 @@ public class BlurSim
     {
         Random rand = new Random();
         
-        File[] fileList = new File("data").listFiles();
-        buffer[] bufferList = new buffer[fileList.length];
+        // Gera dados processando 100 imagens aleatorias
+        buffer[] bufferList = new buffer[100];
+        for (int i = 0; i < bufferList.length; ++i)
+            bufferList[i] = createRandomImage(rand);
 
-        for (int i = 0; i < fileList.length; ++i)
-            bufferList[i] = readImage(fileList[i].getName());
-
-        // Gera 100 dados processando a imagem
         for (int i = 0; i < 100; ++i) 
         {
             int bufferIndex = rand.nextInt(bufferList.length);
@@ -135,7 +170,13 @@ public class BlurSim
             long t1 = System.currentTimeMillis();
 
             long dt = (t1 - t0);
-            System.out.println(dt);
+            System.out.println(buf.width+"x"+buf.height+","+dt);
+        }
+    	
+        // Gera dados usando a equação de destribuição triangular
+        for (int i = 0; i < 100; ++i)
+        {
+            System.out.println((int)triangularDistribution(94, 125, 219));
         }
     }
-}
+}		
